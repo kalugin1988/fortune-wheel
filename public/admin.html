@@ -54,7 +54,8 @@
                     </button>
                 </div>
                 <div class="file-format">
-                    <i class="fas fa-info-circle"></i> Формат файла: фамилия;имя;отчество;отряд (кодировка UTF-8)
+                    <i class="fas fa-info-circle"></i> Поддерживаемые форматы: CSV с разделителями ; , или tab<br>
+                    <i class="fas fa-info-circle"></i> Формат данных: фамилия;имя;отчество;отряд (отряд по умолчанию: 9)
                 </div>
             </div>
             
@@ -75,7 +76,7 @@
                     </div>
                     <div class="form-group">
                         <label for="squad">Отряд:</label>
-                        <input type="number" id="squad" class="form-control" min="1" max="10" required>
+                        <input type="number" id="squad" class="form-control" min="1" max="99" value="9" required>
                     </div>
                     <button type="submit" class="btn">
                         <i class="fas fa-plus"></i> Добавить участника
@@ -88,7 +89,7 @@
             <div class="card">
                 <h3><i class="fas fa-random"></i> Автоматическое перераспределение</h3>
                 <div class="form-group">
-                    <label for="squadCount">Количество отрядов:</label>
+                    <label for="squadCount">Количество отрядов (от 1 до <span id="maxSquads">10</span>):</label>
                     <select id="squadCount" class="form-control">
                         <option value="">-- Выберите количество --</option>
                     </select>
@@ -105,12 +106,19 @@
                     <div class="stat-value" id="totalParticipants">0</div>
                 </div>
                 <div class="stat-item">
-                    <h4>Количество отрядов</h4>
+                    <h4>Текущих отрядов</h4>
                     <div class="stat-value" id="squadsCount">0</div>
                 </div>
                 <div class="stat-item">
-                    <h4>Участников в отряде</h4>
-                    <div class="stat-value" id="participantsPerSquad">0</div>
+                    <h4>Максимум отрядов</h4>
+                    <div class="stat-value" id="maxSquadsCount">0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-info-circle"></i> Информация о распределении</h3>
+                <div id="distributionInfo">
+                    <p>Выберите количество отрядов для просмотра информации о распределении</p>
                 </div>
             </div>
         </div>
@@ -118,6 +126,9 @@
         <div id="manage" class="section">
             <div class="card">
                 <h3><i class="fas fa-list"></i> Список всех участников</h3>
+                <div class="form-group">
+                    <input type="text" id="searchParticipants" class="form-control" placeholder="Поиск по фамилии, имени или отчеству..." onkeyup="searchParticipants()">
+                </div>
                 <div id="allParticipantsList" class="participant-list">
                     <!-- Список участников будет здесь -->
                 </div>
@@ -144,6 +155,14 @@
                     <div class="stat-item">
                         <h4>Исключено отрядов</h4>
                         <div class="stat-value" id="excludedSquadsCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <h4>Всего отрядов</h4>
+                        <div class="stat-value" id="totalSquadsCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <h4>Доступно отрядов</h4>
+                        <div class="stat-value" id="availableSquadsCount">0</div>
                     </div>
                 </div>
                 
@@ -175,6 +194,25 @@
                         <i class="fas fa-info-circle"></i> Формат: фамилия;имя;отчество;отряд
                     </div>
                 </div>
+
+                <div class="export-section" style="margin-top: 20px;">
+                    <h4><i class="fas fa-file-excel"></i> Статистика</h4>
+                    <p>Информация о текущем состоянии системы</p>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <h4>Всего участников</h4>
+                            <div class="stat-value" id="exportTotalParticipants">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Количество отрядов</h4>
+                            <div class="stat-value" id="exportSquadsCount">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Исключено отрядов</h4>
+                            <div class="stat-value" id="exportExcludedCount">0</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -183,6 +221,7 @@
     <script>
         const socket = io();
         let allParticipants = [];
+        let maxSquads = 10;
         
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(section => {
@@ -197,6 +236,8 @@
             
             if (sectionId === 'dragdrop') {
                 renderSquadsDragDrop();
+            } else if (sectionId === 'redistribute') {
+                updateDistributionInfo();
             }
         }
         
@@ -234,6 +275,7 @@
                     fileInput.value = '';
                     updateStats();
                     renderAllParticipants();
+                    updateDistributionInfo();
                 } else {
                     showMessage(data.error, 'error');
                 }
@@ -268,8 +310,10 @@
                 if (data.success) {
                     showMessage(data.message, 'success');
                     document.getElementById('addParticipantForm').reset();
+                    document.getElementById('squad').value = '9';
                     updateStats();
                     renderAllParticipants();
+                    updateDistributionInfo();
                 } else {
                     showMessage(data.error, 'error');
                 }
@@ -302,6 +346,7 @@
                     updateStats();
                     renderAllParticipants();
                     renderSquadsDragDrop();
+                    updateDistributionInfo();
                 } else {
                     showMessage(data.error, 'error');
                 }
@@ -315,11 +360,16 @@
         function updateStats() {
             const total = allParticipants.length;
             const squads = [...new Set(allParticipants.map(p => p.squad))].length;
-            const perSquad = total > 0 ? Math.round(total / squads) : 0;
+            const maxSquadsElement = document.getElementById('maxSquadsCount');
             
             document.getElementById('totalParticipants').textContent = total;
             document.getElementById('squadsCount').textContent = squads;
-            document.getElementById('participantsPerSquad').textContent = perSquad;
+            document.getElementById('exportTotalParticipants').textContent = total;
+            document.getElementById('exportSquadsCount').textContent = squads;
+            
+            if (maxSquadsElement) {
+                maxSquadsElement.textContent = maxSquads;
+            }
         }
         
         function renderAllParticipants() {
@@ -332,10 +382,12 @@
                 const item = document.createElement('div');
                 item.className = 'participant-item';
                 item.innerHTML = `
-                    <div class="participant-name">
-                        ${participant.lastName} ${participant.firstName} ${participant.middleName}
+                    <div>
+                        <div class="participant-name">
+                            ${participant.lastName} ${participant.firstName} ${participant.middleName}
+                        </div>
+                        <div>Отряд: ${participant.squad}</div>
                     </div>
-                    <div>Отряд: ${participant.squad}</div>
                     <div class="participant-actions">
                         <button class="action-btn" onclick="editParticipant(${participant.id})" title="Редактировать">
                             <i class="fas fa-edit"></i>
@@ -349,11 +401,25 @@
             });
         }
         
+        function searchParticipants() {
+            const searchTerm = document.getElementById('searchParticipants').value.toLowerCase();
+            const items = document.querySelectorAll('#allParticipantsList .participant-item');
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
         function renderSquadsDragDrop() {
             const container = document.getElementById('squadsContainer');
             container.innerHTML = '';
             
-            const squads = [...new Set(allParticipants.map(p => p.squad))].sort();
+            const squads = [...new Set(allParticipants.map(p => p.squad))].sort((a, b) => a - b);
             
             squads.forEach(squad => {
                 const squadParticipants = allParticipants.filter(p => p.squad === squad);
@@ -448,6 +514,7 @@
                         renderAllParticipants();
                         renderSquadsDragDrop();
                         updateStats();
+                        updateDistributionInfo();
                     } else {
                         showMessage(data.error, 'error');
                     }
@@ -480,6 +547,7 @@
                             showMessage(data.message, 'success');
                             renderAllParticipants();
                             renderSquadsDragDrop();
+                            updateDistributionInfo();
                         } else {
                             showMessage(data.error, 'error');
                         }
@@ -516,8 +584,17 @@
         function renderExcludedSquads(excludedSquads) {
             const container = document.getElementById('excludedSquadsList');
             const countElement = document.getElementById('excludedSquadsCount');
+            const totalSquadsElement = document.getElementById('totalSquadsCount');
+            const availableSquadsElement = document.getElementById('availableSquadsCount');
+            const exportExcludedElement = document.getElementById('exportExcludedCount');
+            
+            const totalSquads = [...new Set(allParticipants.map(p => p.squad))].length;
+            const availableSquads = totalSquads - excludedSquads.length;
             
             countElement.textContent = excludedSquads.length;
+            totalSquadsElement.textContent = totalSquads;
+            availableSquadsElement.textContent = availableSquads;
+            exportExcludedElement.textContent = excludedSquads.length;
             
             if (excludedSquads.length === 0) {
                 container.innerHTML = `
@@ -538,6 +615,46 @@
         
         function exportToCSV() {
             window.open('/export-csv', '_blank');
+        }
+        
+        function updateDistributionInfo() {
+            const squadCountSelect = document.getElementById('squadCount');
+            const selectedCount = squadCountSelect.value;
+            const infoContainer = document.getElementById('distributionInfo');
+            
+            if (!selectedCount) {
+                infoContainer.innerHTML = '<p>Выберите количество отрядов для просмотра информации о распределении</p>';
+                return;
+            }
+            
+            const totalParticipants = allParticipants.length;
+            const requestedSquads = parseInt(selectedCount);
+            const actualSquads = Math.min(requestedSquads, totalParticipants);
+            const basePerSquad = Math.floor(totalParticipants / actualSquads);
+            const remainder = totalParticipants % actualSquads;
+            
+            let infoHTML = `
+                <p><strong>Запрошено отрядов:</strong> ${requestedSquads}</p>
+                <p><strong>Будет создано отрядов:</strong> ${actualSquads}</p>
+                <p><strong>Участников в отрядах:</strong></p>
+                <ul>
+            `;
+            
+            for (let i = 1; i <= actualSquads; i++) {
+                const participantsInSquad = i === actualSquads ? basePerSquad + remainder : basePerSquad;
+                infoHTML += `<li>Отряд ${i}: ${participantsInSquad} участников</li>`;
+            }
+            
+            infoHTML += `</ul>`;
+            
+            if (requestedSquads > totalParticipants) {
+                infoHTML += `<p class="error" style="color: var(--danger); margin-top: 10px;">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Внимание: Запрошено больше отрядов чем участников. Будет создано ${actualSquads} отрядов.
+                </p>`;
+            }
+            
+            infoContainer.innerHTML = infoHTML;
         }
         
         function showMessage(message, type) {
@@ -562,16 +679,38 @@
             renderSquadsDragDrop();
             renderExcludedSquads(data.usedSquads);
             
-            const squadSelect = document.getElementById('squadCount');
-            squadSelect.innerHTML = '<option value="">-- Выберите количество --</option>';
-            
-            const possibleCounts = getPossibleSquadCounts(allParticipants.length);
-            possibleCounts.forEach(count => {
-                const option = document.createElement('option');
-                option.value = count;
-                option.textContent = `${count} отрядов (по ${allParticipants.length / count} человек)`;
-                squadSelect.appendChild(option);
-            });
+            // Получаем максимальное количество отрядов
+            fetch('/possible-squads')
+                .then(response => response.json())
+                .then(squadsData => {
+                    const possibleCounts = squadsData.possibleCounts;
+                    maxSquads = possibleCounts.length > 0 ? Math.max(...possibleCounts) : 10;
+                    
+                    // Обновляем UI
+                    document.getElementById('maxSquads').textContent = maxSquads;
+                    document.getElementById('maxSquadsCount').textContent = maxSquads;
+                    
+                    const squadSelect = document.getElementById('squadCount');
+                    squadSelect.innerHTML = '<option value="">-- Выберите количество --</option>';
+                    
+                    possibleCounts.forEach(count => {
+                        const option = document.createElement('option');
+                        option.value = count;
+                        const participantsPerSquad = Math.floor(allParticipants.length / count);
+                        const remainder = allParticipants.length % count;
+                        let description = `${count} отрядов`;
+                        if (remainder === 0) {
+                            description += ` (по ${participantsPerSquad} человек)`;
+                        } else {
+                            description += ` (по ${participantsPerSquad} человек + ${remainder} в последнем)`;
+                        }
+                        option.textContent = description;
+                        squadSelect.appendChild(option);
+                    });
+                    
+                    // Добавляем обработчик изменения выбора
+                    squadSelect.addEventListener('change', updateDistributionInfo);
+                });
         });
         
         socket.on('participantAdded', (data) => {
@@ -579,6 +718,7 @@
             updateStats();
             renderAllParticipants();
             renderSquadsDragDrop();
+            updateDistributionInfo();
         });
         
         socket.on('participantUpdated', (data) => {
@@ -586,6 +726,7 @@
             updateStats();
             renderAllParticipants();
             renderSquadsDragDrop();
+            updateDistributionInfo();
         });
         
         socket.on('participantDeleted', (data) => {
@@ -593,6 +734,7 @@
             updateStats();
             renderAllParticipants();
             renderSquadsDragDrop();
+            updateDistributionInfo();
         });
         
         socket.on('usedSquadsUpdated', (squads) => {
@@ -602,16 +744,6 @@
         socket.on('usedSquadsReset', (data) => {
             renderExcludedSquads(data.usedSquads);
         });
-        
-        function getPossibleSquadCounts(totalParticipants) {
-            const possibleCounts = [];
-            for (let i = 2; i <= Math.min(10, totalParticipants); i++) {
-                if (totalParticipants % i === 0) {
-                    possibleCounts.push(i);
-                }
-            }
-            return possibleCounts;
-        }
         
         document.addEventListener('dragend', function() {
             document.querySelectorAll('.participant-item').forEach(item => {

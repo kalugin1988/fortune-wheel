@@ -12,13 +12,10 @@
         <div class="header">
             <h1 class="title"><i class="fas fa-star"></i> КОЛЕСО ФОРТУНЫ <i class="fas fa-star"></i></h1>
             <p class="subtitle">Интерактивная жеребьевка с исключением отрядов</p>
+            <div class="update-indicator">
+                <small><i class="fas fa-sync-alt"></i> Автообновление: <span id="updateInterval">5</span> сек</small>
+            </div>
         </div>
-        
-        <div class="status-info">
-            <h3><i class="fas fa-info-circle"></i> Статус жеребьевки</h3>
-            <p>Проведено жеребьевок: <span id="excludedSquadsCount">0</span></p>
-        </div>
-        
         
         <div class="stats-container">
             <div class="stat-card">
@@ -27,9 +24,9 @@
                 <p>В текущем списке</p>
             </div>
             <div class="stat-card">
-                <h3><i class="fas fa-user-friends"></i> Осталось участников</h3>
-                <div class="stat-number" id="remainingParticipants">0</div>
-                <p>Готовы к жеребьевке</p>
+                <h3><i class="fas fa-user-friends"></i> Осталось отрядов</h3>
+                <div class="stat-number" id="remainingSquads">0</div>
+                <p>Могут участвовать в жеребьевке</p>
             </div>
             <div class="stat-card">
                 <h3><i class="fas fa-trophy"></i> Проведено жеребьевок</h3>
@@ -55,17 +52,13 @@
                 <button id="resetButton" class="reset-btn" onclick="resetWheel()">
                     <i class="fas fa-sync-alt"></i> Сбросить жеребьевку
                 </button>
+                <button id="adminButton" class="admin-btn" onclick="goToAdmin()">
+                    <i class="fas fa-cogs"></i> Админ-панель
+                </button>
             </div>
             
             <div id="result" class="result" style="display: none;">
                 <div class="winner-glow"></div>
-            </div>
-        </div>
-
-        <div class="participants-section">
-            <h3><i class="fas fa-list-ul"></i> Оставшиеся участники</h3>
-            <div class="participants-list" id="participantsList">
-                <!-- Участники будут здесь -->
             </div>
         </div>
 
@@ -80,283 +73,6 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        let isSpinning = false;
-        let usedSquads = [];
-        
-        function updateExcludedSquadsCount() {
-            document.getElementById('excludedSquadsCount').textContent = usedSquads.length;
-        }
-        
-        function spinWheel() {
-            if (isSpinning) return;
-            
-            isSpinning = true;
-            document.getElementById('spinButton').disabled = true;
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('progressFill').style.width = '0%';
-            
-            const spinBtn = document.getElementById('spinButton');
-            spinBtn.classList.add('pulse');
-            
-            socket.emit('spin');
-        }
-        
-        function resetWheel() {
-            socket.emit('reset');
-            createConfetti(30);
-        }
-        
-        function uploadFile() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showMessage('Пожалуйста, выберите файл', 'error');
-                return;
-            }
-            
-            if (!file.name.endsWith('.csv')) {
-                showMessage('Пожалуйста, выберите CSV файл', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('participantsFile', file);
-            formData.append('append', 'false');
-            
-            const uploadBtn = document.querySelector('.upload-btn');
-            const originalHtml = uploadBtn.innerHTML;
-            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
-            uploadBtn.disabled = true;
-            
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showMessage(data.message, 'success');
-                    fileInput.value = '';
-                    createConfetti(20);
-                } else {
-                    showMessage(data.error, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                showMessage('Ошибка при загрузке файла', 'error');
-            })
-            .finally(() => {
-                uploadBtn.innerHTML = originalHtml;
-                uploadBtn.disabled = false;
-            });
-        }
-        
-        function showMessage(message, type) {
-            const messageEl = document.getElementById('uploadMessage');
-            messageEl.textContent = message;
-            messageEl.className = `message ${type} shake`;
-            
-            setTimeout(() => {
-                messageEl.textContent = '';
-                messageEl.className = '';
-            }, 5000);
-        }
-        
-        function createConfetti(count) {
-            for (let i = 0; i < count; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.background = getRandomColor();
-                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
-                document.body.appendChild(confetti);
-                
-                setTimeout(() => {
-                    confetti.remove();
-                }, 5000);
-            }
-            
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes confettiFall {
-                    0% { 
-                        opacity: 1;
-                        transform: translateY(-100px) rotate(0deg); 
-                    }
-                    100% { 
-                        opacity: 0;
-                        transform: translateY(100vh) rotate(360deg); 
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        function getRandomColor() {
-            const colors = ['#ffeb3b', '#4CAF50', '#2196F3', '#f44336', '#9C27B0', '#FF9800'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-        
-        function playWinSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                
-                oscillator.start();
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-                oscillator.stop(audioContext.currentTime + 1);
-            } catch (e) {
-                console.log('Web Audio API не поддерживается');
-            }
-        }
-        
-        socket.on('spinning', (data) => {
-            const currentPersonEl = document.getElementById('currentPerson');
-            const progressFill = document.getElementById('progressFill');
-            
-            currentPersonEl.innerHTML = 
-                `<div class="spin-glow">
-                    <i class="fas fa-spinner fa-spin"></i><br>
-                    ${data.person.lastName} ${data.person.firstName} ${data.person.middleName}<br>
-                    <small>Отряд ${data.person.squad}</small>
-                </div>`;
-            
-            progressFill.style.width = data.progress + '%';
-            
-            if (data.iteration % 5 === 0 && navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-        });
-        
-        socket.on('result', (data) => {
-            isSpinning = false;
-            document.getElementById('spinButton').disabled = data.remainingParticipants.length === 0;
-            document.getElementById('spinButton').classList.remove('pulse');
-            
-            usedSquads = data.usedSquads;
-            updateExcludedSquadsCount();
-            
-            const resultEl = document.getElementById('result');
-            resultEl.innerHTML = `
-                <div class="winner-glow"></div>
-                <i class="fas fa-trophy bounce" style="color: var(--accent);"></i><br>
-                🎉 ПОБЕДИТЕЛЬ 🎉<br>
-                <strong>${data.winner.lastName} ${data.winner.firstName} ${data.winner.middleName}</strong><br>
-                <span style="font-size: 0.8em;">Отряд ${data.winner.squad}</span>
-            `;
-            resultEl.style.display = 'block';
-            
-            updateParticipantsList(data.remainingParticipants);
-            updateHistory(data.spinHistory);
-            updateStats();
-            
-            createConfetti(100);
-            playWinSound();
-        });
-        
-        socket.on('initialData', (data) => {
-            usedSquads = data.usedSquads;
-            updateExcludedSquadsCount();
-            updateParticipantsList(data.participants);
-            updateHistory(data.spinHistory);
-            updateStats();
-        });
-        
-        socket.on('resetData', (data) => {
-            usedSquads = data.usedSquads;
-            updateExcludedSquadsCount();
-            updateParticipantsList(data.participants);
-            updateHistory(data.spinHistory);
-            updateStats();
-            
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('currentPerson').innerHTML = 
-                '<i class="fas fa-play-circle"></i> Нажмите "Крутить колесо" для начала жеребьевки';
-            document.getElementById('spinButton').disabled = false;
-            document.getElementById('progressFill').style.width = '0%';
-        });
-        
-        socket.on('dataUpdated', (data) => {
-            usedSquads = data.usedSquads;
-            updateExcludedSquadsCount();
-            updateParticipantsList(data.participants);
-            updateHistory(data.spinHistory);
-            updateStats();
-            
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('currentPerson').innerHTML = 
-                '<i class="fas fa-play-circle"></i> Нажмите "Крутить колесо" для начала жеребьевки';
-            document.getElementById('spinButton').disabled = false;
-        });
-        
-        socket.on('usedSquadsUpdated', (squads) => {
-            usedSquads = squads;
-            updateExcludedSquadsCount();
-        });
-        
-        socket.on('error', (message) => {
-            isSpinning = false;
-            document.getElementById('spinButton').disabled = true;
-            document.getElementById('spinButton').classList.remove('pulse');
-            showMessage(message, 'error');
-        });
-        
-        function updateParticipantsList(participants) {
-            const listEl = document.getElementById('participantsList');
-            const count = participants.length;
-            
-            if (count === 0) {
-                listEl.innerHTML = '<div class="participant-item"><span>Все участники были выбраны</span></div>';
-            } else {
-                listEl.innerHTML = participants.map(p => 
-                    `<div class="participant-item">
-                        <span>${p.lastName} ${p.firstName} ${p.middleName}</span>
-                        <span class="participant-squad">Отряд ${p.squad}</span>
-                    </div>`
-                ).join('');
-            }
-        }
-        
-        function updateHistory(history) {
-            const historyListEl = document.getElementById('historyList');
-            
-            if (history.length === 0) {
-                historyListEl.innerHTML = '<div class="history-item"><span>Жеребьевка еще не проводилась</span></div>';
-            } else {
-                historyListEl.innerHTML = history.map(item => 
-                    `<div class="history-item">
-                        <div>
-                            <strong>${item.winner.lastName} ${item.winner.firstName}</strong><br>
-                            <small>Отряд ${item.winner.squad} • ${item.timestamp}</small>
-                        </div>
-                        <div class="participant-squad">Осталось: ${item.remaining}</div>
-                    </div>`
-                ).join('');
-            }
-        }
-        
-        function updateStats() {
-            const participants = document.querySelectorAll('.participant-item:not(:only-child)').length;
-            document.getElementById('totalParticipants').textContent = participants;
-            document.getElementById('remainingParticipants').textContent = participants;
-            document.getElementById('spinsCount').textContent = document.querySelectorAll('.history-item:not(:only-child)').length;
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            createConfetti(30);
-            updateExcludedSquadsCount();
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
