@@ -122,6 +122,7 @@ app.get('/', (req, res) => {
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
+
 app.get('/info', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'info.html'));
 });
@@ -435,5 +436,4 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
-
 });
