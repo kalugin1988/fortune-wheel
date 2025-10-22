@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎡 Админ-панель - Управление участниками</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i> Вернуться к колесу фортуны
+        </a>
+        
+        <div class="header">
+            <h1 class="title"><i class="fas fa-cogs"></i> АДМИН-ПАНЕЛЬ</h1>
+            <p class="subtitle">Управление участниками и отрядами</p>
+        </div>
+        
+        <div class="admin-nav">
+            <button class="nav-btn active" onclick="showSection('upload')">
+                <i class="fas fa-file-upload"></i> Загрузка CSV
+            </button>
+            <button class="nav-btn" onclick="showSection('redistribute')">
+                <i class="fas fa-random"></i> Перераспределение
+            </button>
+            <button class="nav-btn" onclick="showSection('manage')">
+                <i class="fas fa-users-cog"></i> Управление участниками
+            </button>
+            <button class="nav-btn" onclick="showSection('dragdrop')">
+                <i class="fas fa-arrows-alt"></i> Drag & Drop
+            </button>
+            <button class="nav-btn" onclick="showSection('excluded')">
+                <i class="fas fa-ban"></i> Исключенные отряды
+            </button>
+            <button class="nav-btn" onclick="showSection('export')">
+                <i class="fas fa-download"></i> Экспорт данных
+            </button>
+        </div>
+        
+        <div id="messageContainer"></div>
+        
+        <div id="upload" class="section active">
+            <div class="card">
+                <h3><i class="fas fa-file-csv"></i> Загрузка списка участников</h3>
+                <div class="file-upload">
+                    <input type="file" id="fileInput" accept=".csv">
+                    <button class="btn btn-info" onclick="uploadFile(false)">
+                        <i class="fas fa-cloud-upload-alt"></i> Заменить список
+                    </button>
+                    <button class="btn btn-info" onclick="uploadFile(true)">
+                        <i class="fas fa-plus"></i> Добавить к списку
+                    </button>
+                </div>
+                <div class="file-format">
+                    <i class="fas fa-info-circle"></i> Формат файла: фамилия;имя;отчество;отряд (кодировка UTF-8)
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fas fa-user-plus"></i> Добавить участника вручную</h3>
+                <form id="addParticipantForm">
+                    <div class="form-group">
+                        <label for="lastName">Фамилия:</label>
+                        <input type="text" id="lastName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="firstName">Имя:</label>
+                        <input type="text" id="firstName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="middleName">Отчество:</label>
+                        <input type="text" id="middleName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="squad">Отряд:</label>
+                        <input type="number" id="squad" class="form-control" min="1" max="10" required>
+                    </div>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-plus"></i> Добавить участника
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="redistribute" class="section">
+            <div class="card">
+                <h3><i class="fas fa-random"></i> Автоматическое перераспределение</h3>
+                <div class="form-group">
+                    <label for="squadCount">Количество отрядов:</label>
+                    <select id="squadCount" class="form-control">
+                        <option value="">-- Выберите количество --</option>
+                    </select>
+                </div>
+                <button class="btn btn-warning" onclick="redistributeSquads()">
+                    <i class="fas fa-random"></i> Перераспределить участников
+                </button>
+                <div id="redistributeMessage"></div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h4>Всего участников</h4>
+                    <div class="stat-value" id="totalParticipants">0</div>
+                </div>
+                <div class="stat-item">
+                    <h4>Количество отрядов</h4>
+                    <div class="stat-value" id="squadsCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <h4>Участников в отряде</h4>
+                    <div class="stat-value" id="participantsPerSquad">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="manage" class="section">
+            <div class="card">
+                <h3><i class="fas fa-list"></i> Список всех участников</h3>
+                <div id="allParticipantsList" class="participant-list">
+                    <!-- Список участников будет здесь -->
+                </div>
+            </div>
+        </div>
+        
+        <div id="dragdrop" class="section">
+            <div class="card">
+                <h3><i class="fas fa-arrows-alt"></i> Перемещение участников между отрядами</h3>
+                <p>Перетащите участников между колонками для изменения их отряда</p>
+                
+                <div class="squads-container" id="squadsContainer">
+                    <!-- Колонки отрядов будут здесь -->
+                </div>
+            </div>
+        </div>
+        
+        <div id="excluded" class="section">
+            <div class="card">
+                <h3><i class="fas fa-ban"></i> Исключенные отряды</h3>
+                <p>Отряды, которые были исключены в процессе жеребьевки на главной странице</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <h4>Исключено отрядов</h4>
+                        <div class="stat-value" id="excludedSquadsCount">0</div>
+                    </div>
+                </div>
+                
+                <div class="squads-list" id="excludedSquadsList" style="margin-top: 20px;">
+                    <!-- Список исключенных отрядов будет здесь -->
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-warning" onclick="resetUsedSquads()">
+                        <i class="fas fa-sync-alt"></i> Сбросить исключенные отряды
+                    </button>
+                    <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                        <i class="fas fa-info-circle"></i> Сброс позволит снова участвовать в жеребьевке всем отрядам
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="export" class="section">
+            <div class="card">
+                <h3><i class="fas fa-download"></i> Экспорт данных</h3>
+                <div class="export-section">
+                    <h4><i class="fas fa-file-csv"></i> Экспорт в CSV</h4>
+                    <p>Выгрузите текущий список участников в формате CSV для обратной загрузки</p>
+                    <button class="btn btn-success" onclick="exportToCSV()">
+                        <i class="fas fa-download"></i> Выгрузить CSV
+                    </button>
+                    <div class="file-format" style="margin-top: 15px;">
+                        <i class="fas fa-info-circle"></i> Формат: фамилия;имя;отчество;отряд
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let allParticipants = [];
+        
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (sectionId === 'dragdrop') {
+                renderSquadsDragDrop();
+            }
+        }
+        
+        function uploadFile(append) {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('Пожалуйста, выберите файл', 'error');
+                return;
+            }
+            
+            if (!file.name.endsWith('.csv')) {
+                showMessage('Пожалуйста, выберите CSV файл', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('participantsFile', file);
+            formData.append('append', append.toString());
+            
+            const uploadBtn = event.target;
+            const originalHtml = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+            uploadBtn.disabled = true;
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    fileInput.value = '';
+                    updateStats();
+                    renderAllParticipants();
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при загрузке файла', 'error');
+            })
+            .finally(() => {
+                uploadBtn.innerHTML = originalHtml;
+                uploadBtn.disabled = false;
+            });
+        }
+        
+        document.getElementById('addParticipantForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const lastName = document.getElementById('lastName').value;
+            const firstName = document.getElementById('firstName').value;
+            const middleName = document.getElementById('middleName').value;
+            const squad = document.getElementById('squad').value;
+            
+            fetch('/add-participant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ lastName, firstName, middleName, squad })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('addParticipantForm').reset();
+                    updateStats();
+                    renderAllParticipants();
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при добавлении участника', 'error');
+            });
+        });
+        
+        function redistributeSquads() {
+            const squadCount = document.getElementById('squadCount').value;
+            
+            if (!squadCount) {
+                showMessage('Пожалуйста, выберите количество отрядов', 'error');
+                return;
+            }
+            
+            fetch('/redistribute-squads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ squadCount: parseInt(squadCount) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    updateStats();
+                    renderAllParticipants();
+                    renderSquadsDragDrop();
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showMessage('Ошибка при перераспределении', 'error');
+            });
+        }
+        
+        function updateStats() {
+            const total = allParticipants.length;
+            const squads = [...new Set(allParticipants.map(p => p.squad))].length;
+            const perSquad = total > 0 ? Math.round(total / squads) : 0;
+            
+            document.getElementById('totalParticipants').textContent = total;
+            document.getElementById('squadsCount').textContent = squads;
+            document.getElementById('participantsPerSquad').textContent = perSquad;
+        }
+        
+        function renderAllParticipants() {
+            const container = document.getElementById('allParticipantsList');
+            container.innerHTML = '';
+            
+            allParticipants.sort((a, b) => a.squad - b.squad || a.lastName.localeCompare(b.lastName));
+            
+            allParticipants.forEach(participant => {
+                const item = document.createElement('div');
+                item.className = 'participant-item';
+                item.innerHTML = `
+                    <div class="participant-name">
+                        ${participant.lastName} ${participant.firstName} ${participant.middleName}
+                    </div>
+                    <div>Отряд: ${participant.squad}</div>
+                    <div class="participant-actions">
+                        <button class="action-btn" onclick="editParticipant(${participant.id})" title="Редактировать">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn" onclick="deleteParticipant(${participant.id})" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        function renderSquadsDragDrop() {
+            const container = document.getElementById('squadsContainer');
+            container.innerHTML = '';
+            
+            const squads = [...new Set(allParticipants.map(p => p.squad))].sort();
+            
+            squads.forEach(squad => {
+                const squadParticipants = allParticipants.filter(p => p.squad === squad);
+                
+                const squadColumn = document.createElement('div');
+                squadColumn.className = 'squad-column';
+                squadColumn.innerHTML = `
+                    <div class="squad-header">
+                        <div class="squad-title">Отряд ${squad}</div>
+                        <div class="squad-count">${squadParticipants.length} участников</div>
+                    </div>
+                    <div class="participant-list" id="squad-${squad}" 
+                         ondrop="drop(event)" ondragover="allowDrop(event)">
+                        ${squadParticipants.map(p => `
+                            <div class="participant-item" draggable="true" 
+                                 ondragstart="drag(event)" id="participant-${p.id}">
+                                <div class="participant-name">
+                                    ${p.lastName} ${p.firstName} ${p.middleName}
+                                </div>
+                            </div>
+                        `).join('')}
+                        <div class="drop-zone">Перетащите участника сюда</div>
+                    </div>
+                `;
+                container.appendChild(squadColumn);
+            });
+        }
+        
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+        
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.target.classList.add('dragging');
+        }
+        
+        function drop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+            
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            const targetSquad = ev.currentTarget.id.replace('squad-', '');
+            
+            if (draggedElement) {
+                const participantId = parseInt(data.replace('participant-', ''));
+                const participant = allParticipants.find(p => p.id === participantId);
+                
+                if (participant && participant.squad !== targetSquad) {
+                    fetch('/update-participant-squad', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            participantId: participantId,
+                            newSquad: targetSquad
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showMessage(`Участник перемещен в отряд ${targetSquad}`, 'success');
+                            renderSquadsDragDrop();
+                        } else {
+                            showMessage(data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        showMessage('Ошибка при перемещении участника', 'error');
+                    });
+                }
+            }
+            
+            document.querySelectorAll('.participant-item').forEach(item => {
+                item.classList.remove('dragging');
+            });
+        }
+        
+        function deleteParticipant(id) {
+            if (confirm('Вы уверены, что хотите удалить этого участника?')) {
+                fetch(`/participant/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        renderAllParticipants();
+                        renderSquadsDragDrop();
+                        updateStats();
+                    } else {
+                        showMessage(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showMessage('Ошибка при удалении участника', 'error');
+                });
+            }
+        }
+        
+        function editParticipant(id) {
+            const participant = allParticipants.find(p => p.id === id);
+            if (participant) {
+                const newSquad = prompt(`Введите новый отряд для ${participant.lastName} ${participant.firstName}:`, participant.squad);
+                if (newSquad && newSquad !== participant.squad) {
+                    fetch('/update-participant-squad', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            participantId: id,
+                            newSquad: newSquad
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showMessage(data.message, 'success');
+                            renderAllParticipants();
+                            renderSquadsDragDrop();
+                        } else {
+                            showMessage(data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        showMessage('Ошибка при обновлении участника', 'error');
+                    });
+                }
+            }
+        }
+        
+        function resetUsedSquads() {
+            if (confirm('Вы уверены, что хотите сбросить все исключенные отряды? Это позволит всем отрядам снова участвовать в жеребьевке.')) {
+                fetch('/reset-used-squads', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        renderExcludedSquads([]);
+                    } else {
+                        showMessage(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showMessage('Ошибка при сбросе отрядов', 'error');
+                });
+            }
+        }
+        
+        function renderExcludedSquads(excludedSquads) {
+            const container = document.getElementById('excludedSquadsList');
+            const countElement = document.getElementById('excludedSquadsCount');
+            
+            countElement.textContent = excludedSquads.length;
+            
+            if (excludedSquads.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <i class="fas fa-check-circle" style="font-size: 3em; opacity: 0.5; margin-bottom: 15px;"></i>
+                        <p>Нет исключенных отрядов</p>
+                        <p style="font-size: 0.9em; opacity: 0.7;">Все отряды могут участвовать в жеребьевке</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = excludedSquads.map(squad => `
+                    <div class="squad-badge">
+                        <i class="fas fa-ban"></i> Отряд ${squad}
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function exportToCSV() {
+            window.open('/export-csv', '_blank');
+        }
+        
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            container.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+        
+        socket.on('initialData', (data) => {
+            allParticipants = data.participants;
+            updateStats();
+            renderAllParticipants();
+            renderSquadsDragDrop();
+            renderExcludedSquads(data.usedSquads);
+            
+            const squadSelect = document.getElementById('squadCount');
+            squadSelect.innerHTML = '<option value="">-- Выберите количество --</option>';
+            
+            const possibleCounts = getPossibleSquadCounts(allParticipants.length);
+            possibleCounts.forEach(count => {
+                const option = document.createElement('option');
+                option.value = count;
+                option.textContent = `${count} отрядов (по ${allParticipants.length / count} человек)`;
+                squadSelect.appendChild(option);
+            });
+        });
+        
+        socket.on('participantAdded', (data) => {
+            allParticipants = data.participants;
+            updateStats();
+            renderAllParticipants();
+            renderSquadsDragDrop();
+        });
+        
+        socket.on('participantUpdated', (data) => {
+            allParticipants = data.participants;
+            updateStats();
+            renderAllParticipants();
+            renderSquadsDragDrop();
+        });
+        
+        socket.on('participantDeleted', (data) => {
+            allParticipants = data.participants;
+            updateStats();
+            renderAllParticipants();
+            renderSquadsDragDrop();
+        });
+        
+        socket.on('usedSquadsUpdated', (squads) => {
+            renderExcludedSquads(squads);
+        });
+        
+        socket.on('usedSquadsReset', (data) => {
+            renderExcludedSquads(data.usedSquads);
+        });
+        
+        function getPossibleSquadCounts(totalParticipants) {
+            const possibleCounts = [];
+            for (let i = 2; i <= Math.min(10, totalParticipants); i++) {
+                if (totalParticipants % i === 0) {
+                    possibleCounts.push(i);
+                }
+            }
+            return possibleCounts;
+        }
+        
+        document.addEventListener('dragend', function() {
+            document.querySelectorAll('.participant-item').forEach(item => {
+                item.classList.remove('dragging');
+            });
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+        });
+    </script>
+</body>
+</html>
