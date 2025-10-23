@@ -27,6 +27,9 @@ function resetWheel() {
 function goToAdmin() {
     window.location.href = '/admin';
 }
+function goToinfo() {
+    window.location.href = '/info';
+}
 
 function createConfetti(count) {
     for (let i = 0; i < count; i++) {

@@ -3,370 +3,836 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fortune Wheel - Инструкция по запуску</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-            padding: 40px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .platforms {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .platform-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .platform-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        }
-
-        .platform-card.windows {
-            border-top: 5px solid #0078d7;
-        }
-
-        .platform-card.linux-debian {
-            border-top: 5px solid #d70a53;
-        }
-
-        .platform-card.linux-redos {
-            border-top: 5px solid #e90;
-        }
-
-        .platform-icon {
-            font-size: 2.5em;
-            margin-bottom: 15px;
-        }
-
-        .platform-card h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.8em;
-        }
-
-        .step {
-            margin-bottom: 25px;
-            padding-left: 20px;
-            border-left: 3px solid #3498db;
-        }
-
-        .step h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-
-        .step p {
-            margin-bottom: 10px;
-            color: #555;
-        }
-
-        code {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            display: block;
-            margin: 10px 0;
-            border-left: 4px solid #3498db;
-            overflow-x: auto;
-            font-size: 0.9em;
-        }
-
-        .commands {
-            margin-top: 40px;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .commands h2 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 2em;
-        }
-
-        .command-group {
-            margin-bottom: 25px;
-        }
-
-        .command-group h3 {
-            color: #34495e;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .troubleshooting {
-            margin-top: 40px;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .troubleshooting h2 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 2em;
-        }
-
-        .problem {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .problem h3 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 50px;
-            padding: 20px;
-            opacity: 0.8;
-        }
-
-        @media (max-width: 768px) {
-            .platforms {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .platform-card {
-                padding: 20px;
-            }
-        }
-
-        .highlight {
-            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #667eea;
-        }
-    </style>
+    <title>Fortune Wheel - Полная инструкция по запуску</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🎡 Fortune Wheel</h1>
-            <p>Инструкция по запуску сервиса через Docker</p>
+            <p>Полное руководство по установке и использованию</p>
         </div>
 
-        <div class="highlight">
-            <h2>🚀 Быстрый старт</h2>
-            <p>Fortune Wheel - это веб-приложение "Колесо фортуны", которое запускается в Docker контейнере. После запуска приложение будет доступно по адресу: <strong>http://localhost:3000</strong></p>
+        <div class="quick-start">
+            <h2><i class="fas fa-rocket"></i> Быстрый старт</h2>
+            <p>Fortune Wheel - это современное веб-приложение для проведения жеребьевки среди участников, разбитых на отряды. После запуска приложение будет доступно по адресу:</p>
+            <a href="http://localhost:3000" class="access-link pulse">
+                <i class="fas fa-external-link-alt"></i>
+                http://localhost:3000
+            </a>
         </div>
 
-        <div class="commands">
-            <!-- Windows Card -->
-            <div class="platform-card windows">
-                <div class="platform-icon">🪟</div>
-                <h2>Windows</h2>
+        <div class="installation-steps">
+            <h2><i class="fas fa-download"></i> Установка Docker</h2>
+            
+            <!-- Windows Installation -->
+            <div class="platform-section">
+                <div class="platform-header">
+                    <div class="platform-icon">🪟</div>
+                    <h3>Windows</h3>
+                </div>
                 
                 <div class="step">
-                    <h3>1. Установите Docker Desktop</h3>
-                    <p>Скачайте с официального сайта:</p>
-                    <code>https://www.docker.com/products/docker-desktop/</code>
-                    <p>Запустите установщик, следуйте инструкциям и перезагрузите компьютер</p>
+                    <h4>1. Скачайте Docker Desktop</h4>
+                    <p>Перейдите на официальный сайт и скачайте установщик:</p>
+                    <div class="code-block">
+                        <code>https://www.docker.com/products/docker-desktop/</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
                 </div>
 
                 <div class="step">
-                    <h3>2. Запустите сервис</h3>
-                    <p>Откройте командную строку (CMD) или PowerShell:</p>
-                    <code>git clone https://github.com/kalugin1988/fortune-wheel.git<br>cd fortune-wheel<br>docker-compose up -d</code>
+                    <h4>2. Установите Docker Desktop</h4>
+                    <p>Запустите скачанный установщик и следуйте инструкциям:</p>
+                    <ul>
+                        <li>Примите лицензионное соглашение</li>
+                        <li>Выберите все предлагаемые компоненты</li>
+                        <li>Дождитесь завершения установки</li>
+                        <li>Перезагрузите компьютер при запросе</li>
+                    </ul>
                 </div>
 
                 <div class="step">
-                    <h3>3. Откройте приложение</h3>
-                    <p>Перейдите в браузере по адресу:</p>
+                    <h4>3. Проверьте установку</h4>
+                    <p>Откройте командную строку (CMD) или PowerShell и выполните:</p>
+                    <div class="code-block">
+                        <code>docker --version</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Linux Debian/Ubuntu Installation -->
+            <div class="platform-section">
+                <div class="platform-header">
+                    <div class="platform-icon">🐧</div>
+                    <h3>Linux Debian/Ubuntu</h3>
+                </div>
+                
+                <div class="step">
+                    <h4>1. Обновите систему</h4>
+                    <div class="code-block">
+                        <code>sudo apt update && sudo apt upgrade -y</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>2. Установите Docker</h4>
+                    <div class="code-block">
+                        <code>sudo apt install docker.io -y</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>3. Установите Docker Compose</h4>
+                    <div class="code-block">
+                        <code>sudo apt install docker-compose -y</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>4. Запустите и настройте Docker</h4>
+                    <div class="code-block">
+                        <code>sudo systemctl start docker</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <div class="code-block">
+                        <code>sudo systemctl enable docker</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <div class="code-block">
+                        <code>sudo usermod -aG docker $USER</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <p class="note">После выполнения перезайдите в систему</p>
+                </div>
+            </div>
+
+            <!-- Linux RedOS/CentOS Installation -->
+            <div class="platform-section">
+                <div class="platform-header">
+                    <div class="platform-icon">📕</div>
+                    <h3>Linux RedOS/CentOS/RHEL</h3>
+                </div>
+                
+                <div class="step">
+                    <h4>1. Обновите систему</h4>
+                    <div class="code-block">
+                        <code>sudo yum update -y</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>2. Установите Docker</h4>
+                    <div class="code-block">
+                        <code>sudo yum install docker -y</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>3. Запустите и настройте Docker</h4>
+                    <div class="code-block">
+                        <code>sudo systemctl start docker</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <div class="code-block">
+                        <code>sudo systemctl enable docker</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h4>4. Установите Docker Compose</h4>
+                    <div class="code-block">
+                        <code>sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                    <div class="code-block">
+                        <code>sudo chmod +x /usr/local/bin/docker-compose</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="project-setup">
+            <h2><i class="fas fa-play-circle"></i> Запуск проекта</h2>
+            
+            <div class="step">
+                <h4>1. Клонируйте репозиторий</h4>
+                <div class="code-block">
+                    <code>git clone https://github.com/kalugin1988/fortune-wheel.git</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+            </div>
+
+            <div class="step">
+                <h4>2. Перейдите в папку проекта</h4>
+                <div class="code-block">
+                    <code>cd fortune-wheel</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+            </div>
+
+            <div class="step">
+                <h4>3. Запустите приложение</h4>
+                <div class="code-block">
+                    <code>docker-compose up -d</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+            </div>
+
+            <div class="step">
+                <h4>4. Откройте приложение</h4>
+                <p>Основное приложение:</p>
+                <div class="code-block">
                     <code>http://localhost:3000</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
                 </div>
-            </div>
-
-            <!-- Linux Debian Card -->
-            <div class="platform-card linux-debian">
-                <div class="platform-icon">🐧</div>
-                <h2>Linux Debian/Ubuntu</h2>
-                
-                <div class="step">
-                    <h3>1. Установите Docker</h3>
-                    <code>sudo apt update<br>sudo apt upgrade -y<br>sudo apt install git docker.io docker-compose -y<br>sudo systemctl enable docker<br>sudo systemctl start docker</code>
-                </div>
-
-                <div class="step">
-                    <h3>2. Запустите сервис</h3>
-                    <code>git clone https://github.com/kalugin1988/fortune-wheel.git<br>cd fortune-wheel<br>docker-compose up -d</code>
-                </div>
-
-                <div class="step">
-                    <h3>3. Откройте приложение</h3>
-                    <code>http://localhost:3000</code>
-                </div>
-            </div>
-
-            <!-- Linux RedOS Card -->
-            <div class="platform-card linux-redos">
-                <div class="platform-icon">📕</div>
-                <h2>Linux RedOS/CentOS/RHEL</h2>
-                
-                <div class="step">
-                    <h3>1. Установите Docker</h3>
-                    <code>sudo yum update -y<br>sudo yum install git docker -y<br>sudo systemctl start docker<br>sudo systemctl enable docker</code>
-                </div>
-
-                <div class="step">
-                    <h3>2. Установите Docker Compose</h3>
-                    <code>sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose<br>sudo chmod +x /usr/local/bin/docker-compose</code>
-                </div>
-
-                <div class="step">
-                    <h3>3. Запустите сервис</h3>
-                    <code>git clone https://github.com/kalugin1988/fortune-wheel.git<br>cd fortune-wheel<br>docker-compose up -d</code>
+                <p>Админ-панель:</p>
+                <div class="code-block">
+                    <code>http://localhost:3000/admin</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
                 </div>
             </div>
         </div>
 
-        <div class="commands">
-            <h2>🔧 Полезные команды Docker</h2>
+        <div class="features-section">
+            <h2><i class="fas fa-star"></i> Основные возможности</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-redo-alt"></i></div>
+                    <h3>Интерактивное колесо</h3>
+                    <p>Анимированное колесо фортуны с визуальным выбором участников и исключением отрядов после выбора победителя</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-users-cog"></i></div>
+                    <h3>Управление участниками</h3>
+                    <p>Загрузка CSV файлов, ручное добавление, редактирование и удаление участников. Поддержка различных форматов разделителей</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-random"></i></div>
+                    <h3>Автоматическое распределение</h3>
+                    <p>Функция автоматического перераспределения участников по указанному количеству отрядов с равномерным распределением</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-arrows-alt"></i></div>
+                    <h3>Drag & Drop</h3>
+                    <p>Интуитивное перетаскивание участников между отрядами с помощью мыши или касания на мобильных устройствах</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3>Статистика в реальном времени</h3>
+                    <p>Детальная информация о распределении участников, исключенных отрядах и истории жеребьевок</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h3>Мобильная оптимизация</h3>
+                    <p>Полная адаптация под мобильные устройства, сенсорное управление и виброотклик</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <h2><i class="fas fa-cogs"></i> Админ-панель управления</h2>
+            <p class="admin-url">
+                Доступна по адресу: 
+                <span class="url-display">http://localhost:3000/admin</span>
+            </p>
+            
+            <div class="admin-features">
+                <div class="admin-feature">
+                    <i class="fas fa-file-csv"></i>
+                    <h4>Загрузка CSV</h4>
+                    <p>Поддержка разделителей: ; , tab</p>
+                </div>
+                <div class="admin-feature">
+                    <i class="fas fa-user-edit"></i>
+                    <h4>Ручное управление</h4>
+                    <p>Добавление, редактирование, поиск</p>
+                </div>
+                <div class="admin-feature">
+                    <i class="fas fa-download"></i>
+                    <h4>Экспорт данных</h4>
+                    <p>Выгрузка в CSV формате</p>
+                </div>
+                <div class="admin-feature">
+                    <i class="fas fa-ban"></i>
+                    <h4>Управление отрядами</h4>
+                    <p>Сброс исключенных отрядов</p>
+                </div>
+            </div>
+
+            <div class="env-config">
+                <h3>Настройка через переменные окружения</h3>
+                <div class="env-vars">
+                    <div class="env-var">
+                        <code>FORTUNE_LOGIN=admin</code>
+                        <span>Логин для админ-панели</span>
+                    </div>
+                    <div class="env-var">
+                        <code>FORTUNE_PASSWORD=password</code>
+                        <span>Пароль для админ-панели</span>
+                    </div>
+                    <div class="env-var">
+                        <code>FORTUNE_COUNT=10</code>
+                        <span>Максимальное количество отрядов</span>
+                    </div>
+                    <div class="env-var">
+                        <code>FORTUNE_UPDATE=5</code>
+                        <span>Интервал автообновления (секунды)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="commands-section">
+            <h2><i class="fas fa-terminal"></i> Полезные команды Docker</h2>
             
             <div class="command-group">
-                <h3>Управление сервисом</h3>
-                <code>docker-compose up -d          # Запуск сервиса<br>docker-compose down           # Остановка сервиса<br>docker-compose restart        # Перезапуск сервиса</code>
+                <h3><i class="fas fa-play"></i> Управление сервисом</h3>
+                <div class="code-block">
+                    <code>docker-compose up -d</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker-compose down</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker-compose restart</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker-compose logs -f</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
             </div>
 
             <div class="command-group">
-                <h3>Просмотр информации</h3>
-                <code>docker ps                     # Запущенные контейнеры<br>docker ps -a                  # Все контейнеры<br>docker-compose logs           # Просмотр логов</code>
+                <h3><i class="fas fa-info-circle"></i> Просмотр информации</h3>
+                <div class="code-block">
+                    <code>docker ps</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker ps -a</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker-compose logs</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker stats</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
             </div>
 
             <div class="command-group">
-                <h3>Очистка</h3>
-                <code>docker stop $(docker ps -aq)  # Остановить все контейнеры<br>docker rm $(docker ps -aq)    # Удалить все контейнеры</code>
+                <h3><i class="fas fa-broom"></i> Очистка</h3>
+                <div class="code-block">
+                    <code>docker-compose down -v</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker system prune -a</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker volume prune</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
             </div>
         </div>
 
         <div class="troubleshooting">
-            <h2>⚠️ Решение проблем</h2>
+            <h2><i class="fas fa-wrench"></i> Решение проблем</h2>
             
             <div class="problem">
-                <h3>Порт 3000 занят</h3>
+                <h3><i class="fas fa-exclamation-triangle"></i> Порт 3000 занят</h3>
                 <p>Измените порт в файле <code>docker-compose.yml</code>:</p>
-                <code>ports:<br>  - "3001:3000"</code>
+                <div class="code-block">
+                    <code>ports:
+  - "3001:3000"</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
                 <p>И используйте адрес: <code>http://localhost:3001</code></p>
             </div>
 
             <div class="problem">
-                <h3>Ошибки прав доступа (Linux)</h3>
-                <code>sudo chmod 666 /var/run/docker.sock</code>
+                <h3><i class="fas fa-lock"></i> Ошибки прав доступа (Linux)</h3>
+                <div class="code-block">
+                    <code>sudo usermod -aG docker $USER</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>sudo chmod 666 /var/run/docker.sock</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <p class="note">После выполнения перезайдите в систему</p>
             </div>
 
             <div class="problem">
-                <h3>Проблемы с сетью</h3>
-                <code>sudo systemctl restart docker</code>
+                <h3><i class="fas fa-network-wired"></i> Проблемы с сетью</h3>
+                <div class="code-block">
+                    <code>sudo systemctl restart docker</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>docker network prune</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
             </div>
 
             <div class="problem">
-                <h3>Docker не запускается (Windows)</h3>
+                <h3><i class="fas fa-desktop"></i> Docker не запускается (Windows)</h3>
                 <p>Убедитесь, что включена виртуализация в BIOS и установлен WSL2</p>
+                <div class="code-block">
+                    <code>wsl --install</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
+                <div class="code-block">
+                    <code>wsl --set-default-version 2</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+                </div>
             </div>
         </div>
 
         <div class="footer">
-            <p>Инструкция по запуску от Средняя общеобразовательная школа № 25 имени В.Г. Феофанова</p>
+            <p><strong>Fortune Wheel</strong> - Интерактивная система жеребьевки</p>
             <p>Репозиторий: https://github.com/kalugin1988/fortune-wheel</p>
+            <p class="school-info">Разработано для Средней общеобразовательной школы № 25 имени В.Г. Феофанова</p>
         </div>
     </div>
 
     <script>
-        // Добавляем подсветку кодовых блоков при клике
-        document.addEventListener('DOMContentLoaded', function() {
-            const codeBlocks = document.querySelectorAll('code');
+        function copyCode(button) {
+            const codeBlock = button.previousElementSibling;
+            const textToCopy = codeBlock.textContent;
             
-            codeBlocks.forEach(block => {
-                block.addEventListener('click', function() {
-                    const selection = window.getSelection();
-                    const range = document.createRange();
-                    range.selectNodeContents(this);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    
-                    try {
-                        document.execCommand('copy');
-                        const originalText = this.textContent;
-                        this.textContent = '✓ Скопировано!';
-                        
-                        setTimeout(() => {
-                            this.textContent = originalText;
-                        }, 1500);
-                    } catch (err) {
-                        console.error('Ошибка копирования: ', err);
-                    }
-                    
-                    selection.removeAllRanges();
-                });
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✓ Скопировано!';
+                button.style.background = '#4CAF50';
                 
-                // Добавляем подсказку
-                block.title = 'Нажмите для копирования';
-                block.style.cursor = 'pointer';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Ошибка копирования: ', err);
+                button.textContent = '❌ Ошибка';
+                button.style.background = '#f44336';
+                
+                setTimeout(() => {
+                    button.textContent = 'Копировать';
+                    button.style.background = '';
+                }, 2000);
+            });
+        }
+
+        // Плавная прокрутка для якорных ссылок
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
             });
         });
     </script>
+<footer class="ai-prompt-footer">
+    <div class="container">
+        <div class="prompt-section">
+            <div class="prompt-header">
+                <div class="prompt-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>Промт для ИИ для самостоятельной генерации аналогичного сервиса</h3>
+                <div class="prompt-subtitle">Полное техническое задание для воссоздания веб-приложения</div>
+            </div>
+            
+            <div class="prompt-content">
+                <div class="prompt-card">
+                    <div class="card-header">
+                        <i class="fas fa-bullseye"></i>
+                        <h4>Основная задача</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Создать веб-приложение "Колесо Фортуны" для проведения интерактивной жеребьевки с системой исключения отрядов после их выбора. Приложение должно иметь современный дизайн, плавные анимации и real-time обновления.</p>
+                    </div>
+                </div>
+
+                <div class="prompt-grid">
+                    <div class="prompt-card">
+                        <div class="card-header">
+                            <i class="fas fa-list-check"></i>
+                            <h4>Функциональные требования</h4>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li><strong>Интерактивное колесо</strong> - анимация вращения с случайным выбором</li>
+                                <li><strong>Система исключения</strong> - отряды исключаются после выбора</li>
+                                <li><strong>Автообновление</strong> - обновление данных каждые 5 секунд</li>
+                                <li><strong>Статистика в реальном времени</strong> - участники, отряды, жеребьевки</li>
+                                <li><strong>История операций</strong> - список всех проведенных жеребьевок</li>
+                                <li><strong>Админ-панель</strong> - управление данными и настройками</li>
+                                <li><strong>Сброс системы</strong> - восстановление всех участников</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="prompt-card">
+                        <div class="card-header">
+                            <i class="fas fa-code"></i>
+                            <h4>Технический стек</h4>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                <li><strong>Frontend:</strong> HTML5, CSS3, JavaScript ES6+</li>
+                                <li><strong>Backend:</strong> Node.js с Express.js</li>
+                                <li><strong>Real-time:</strong> Socket.IO для мгновенных обновлений</li>
+                                <li><strong>Стилизация:</strong> CSS Grid, Flexbox, анимации</li>
+                                <li><strong>Иконки:</strong> Font Awesome 6.4.0</li>
+                                <li><strong>Адаптивность:</strong> Mobile-first дизайн</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="card-header">
+                        <i class="fas fa-palette"></i>
+                        <h4>Дизайн и UI/UX</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="design-features">
+                            <div class="design-item">
+                                <i class="fas fa-star"></i>
+                                <span>Яркий заголовок с иконками</span>
+                            </div>
+                            <div class="design-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Карточки статистики с метриками</span>
+                            </div>
+                            <div class="design-item">
+                                <i class="fas fa-cog"></i>
+                                <span>Стилизованные кнопки управления</span>
+                            </div>
+                            <div class="design-item">
+                                <i class="fas fa-history"></i>
+                                <span>Секция истории с временной шкалой</span>
+                            </div>
+                            <div class="design-item">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Индикатор автообновления</span>
+                            </div>
+                            <div class="design-item">
+                                <i class="fas fa-trophy"></i>
+                                <span>Эффекты победителя с анимацией</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prompt-card">
+                    <div class="card-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <h4>Рекомендации по реализации</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="implementation-text">
+                            Для реализации используйте JavaScript для обработки логики вращения колеса, включая 
+                            математические расчеты для случайного выбора и анимации. Socket.IO рекомендуется 
+                            для организации real-time обновлений между клиентом и сервером. CSS анимации 
+                            обеспечат плавное вращение колеса и визуальные эффекты. Систему исключения 
+                            участников реализуйте через манипуляции с массивами данных на стороне сервера. 
+                            Добавление звуковых эффектов при вращении и выборе победителя значительно 
+                            улучшит пользовательский опыт. Обеспечьте валидацию данных и обработку 
+                            ошибок для стабильной работы приложения.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="prompt-footer">
+                    <div class="tech-tags">
+                        <span class="tech-tag">Web Development</span>
+                        <span class="tech-tag">Real-time Application</span>
+                        <span class="tech-tag">Interactive UI</span>
+                        <span class="tech-tag">Node.js</span>
+                        <span class="tech-tag">Socket.IO</span>
+                    </div>
+                    <div class="prompt-actions">
+                        <button class="copy-prompt-btn" onclick="copyPromptToClipboard()">
+                            <i class="fas fa-copy"></i> Копировать промт
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+.ai-prompt-footer {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-top: 50px;
+    padding: 40px 0;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3);
+}
+
+.prompt-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.prompt-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+    color: #ffd700;
+}
+
+.prompt-header h3 {
+    font-size: 2em;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.prompt-subtitle {
+    font-size: 1.1em;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+.prompt-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.prompt-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.prompt-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-header i {
+    font-size: 1.5em;
+    margin-right: 15px;
+    color: #ffd700;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.card-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.card-body li {
+    padding: 8px 0;
+    line-height: 1.5;
+    position: relative;
+    padding-left: 0;
+    text-align: justify;
+}
+
+.card-body li strong {
+    color: #ffd700;
+}
+
+.prompt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.design-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.design-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.design-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.design-item i {
+    margin-right: 10px;
+    color: #ffd700;
+    width: 20px;
+    text-align: center;
+}
+
+.implementation-text {
+    line-height: 1.7;
+    text-align: justify;
+    font-size: 1.05em;
+}
+
+.prompt-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tech-tag {
+    background: rgba(255, 215, 0, 0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.copy-prompt-btn {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #333;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.copy-prompt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .prompt-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .prompt-footer {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .tech-tags {
+        justify-content: center;
+    }
+    
+    .prompt-header h3 {
+        font-size: 1.6em;
+    }
+    
+    .prompt-card {
+        padding: 20px;
+    }
+}
+</style>
+
+<script>
+function copyPromptToClipboard() {
+    const promptText = `Промт для создания веб-приложения "Колесо Фортуны":
+
+ЗАДАЧА: Создать веб-приложение для интерактивной жеребьевки с системой исключения отрядов
+
+ФУНКЦИОНАЛЬНЫЕ ТРЕБОВАНИЯ:
+- Интерактивное колесо с анимацией вращения
+- Система исключения отрядов после выбора
+- Автообновление данных каждые 5 секунд
+- Статистика: участники, отряды, жеребьевки
+- История операций
+- Админ-панель управления
+- Функция сброса системы
+
+ТЕХНИЧЕСКИЙ СТЕК:
+Frontend: HTML5, CSS3, JavaScript ES6+
+Backend: Node.js + Express
+Real-time: Socket.IO
+Стили: CSS Grid, Flexbox, анимации
+Иконки: Font Awesome 6.4.0
+
+ДИЗАЙН:
+- Современный UI с градиентами
+- Карточки статистики
+- Стилизованные кнопки
+- Секция истории
+- Эффекты победителя
+- Адаптивный дизайн
+
+РЕКОМЕНДАЦИИ:
+Использовать JavaScript для логики вращения, Socket.IO для real-time обновлений, CSS анимации для плавных эффектов, систему исключения через манипуляции с массивами.`;
+
+    navigator.clipboard.writeText(promptText).then(() => {
+        const btn = document.querySelector('.copy-prompt-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+        btn.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = 'linear-gradient(135deg, #ffd700, #ffed4e)';
+        }, 2000);
+    });
+}
+</script>
 </body>
 </html>
